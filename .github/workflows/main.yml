@@ -30,7 +30,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Download release-note tool
-        run: GO111MODULE=on go get k8s.io/release/cmd/release-notesv0.7.0
+        run: GO111MODULE=on go get k8s.io/release/cmd/release-notes@v0.7.0
 
       # Runs a set of commands using the runners shell
       - name: generate release note
