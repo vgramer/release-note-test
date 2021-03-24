@@ -24,16 +24,15 @@ else
 fi
 
 echo "=================================================================================================================="
-echo "=================================================================================================================="
 echo  "generating next release notes"
+echo "=================================================================================================================="
 
 ${ROOT}/hack/generate_release_notes.sh
 
 echo "=================================================================================================================="
-echo "=================================================================================================================="
 echo  "release notes succesfully generated"
 echo  "merging next release notes with changelog"
-
+echo "=================================================================================================================="
 
 echo -e "\n" >> next-release-notes.md
 cat next-release-notes.md CHANGELOG.md > tmp_changelog.md
@@ -41,7 +40,8 @@ mv tmp_changelog.md CHANGELOG.md
 
 git add CHANGELOG.md
 git commit -m "update changelog with new version"
+git push origin "${release_note_branch}" -f
 
 echo "create or update PR"
-hub pull-request --file release-notes-pr-description.md --force
+hub pull-request --base master --head "${release_note_branch}" --file "${ROOT}/.github/release-notes-pr-description.md"
 
