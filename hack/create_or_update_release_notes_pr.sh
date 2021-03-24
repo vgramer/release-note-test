@@ -12,6 +12,7 @@ source "${ROOT}/hack/util.sh"
 util::require-hub
 
 release_note_branch='update-release-notes'
+base_branch='master'
 pr_number="$(hub pr list -h update-release-notes --format '%I')"
 
 if [[ -z "${pr_number}" ]]; then
@@ -20,7 +21,7 @@ if [[ -z "${pr_number}" ]]; then
 else
   echo "release notes pr already exist (#pr_number)"
   hub pr checkout "${pr_number}"
-  git reset --hard master
+  git reset --hard "${base_branch}"
 fi
 
 echo "=================================================================================================================="
@@ -43,5 +44,5 @@ git commit -m "update changelog with new version"
 git push origin "${release_note_branch}" -f
 
 echo "create or update PR"
-hub pull-request --base master --head "${release_note_branch}" --file "${ROOT}/.github/release-notes-pr-description.md"
+hub pull-request --base "${base_branch}" --head "${release_note_branch}" --file "${ROOT}/.github/release-notes-pr-description.md"
 
