@@ -16,9 +16,11 @@ base_branch='master'
 pr_number="$(hub pr list -h update-release-notes --format '%I')"
 
 if [[ -z "${pr_number}" ]]; then
+  pr_exist=false
   echo "release notes pr does note already exist"
   git checkout -b "${release_note_branch}"
 else
+  pr_exist=true
   echo "release notes pr already exist (#pr_number)"
   hub pr checkout "${pr_number}"
   git reset --hard "${base_branch}"
@@ -41,8 +43,10 @@ mv tmp_changelog.md CHANGELOG.md
 
 git add CHANGELOG.md
 git commit -m "update changelog with new version"
+echo "push new changelog on branch ${release_note_branch}"
 git push origin "${release_note_branch}" -f
 
-echo "create or update PR"
-hub pull-request --base "${base_branch}" --head "${release_note_branch}" --file "${ROOT}/.github/release-notes-pr-description.md"
-
+if [[ "${pr_exist}" == false ]]; then
+echo "create release note PR"
+  hub pull-request --base master --head "${release_note_branch}" --file "${ROOT}/.github/release-notes-pr-description.md"
+fi
