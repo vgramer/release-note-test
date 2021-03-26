@@ -30,16 +30,24 @@ echo "==========================================================================
 echo  "generating next release notes"
 echo "=================================================================================================================="
 
-${ROOT}/hack/generate_release_notes.sh
+"${ROOT}"/hack/generate_release_notes.sh
 
 echo "=================================================================================================================="
-echo  "release notes succesfully generated"
+echo  "release notes successfully generated"
 echo  "merging next release notes with changelog"
 echo "=================================================================================================================="
 
 echo -e "\n" >> next-release-notes.md
 cat next-release-notes.md CHANGELOG.md > tmp_changelog.md
 mv tmp_changelog.md CHANGELOG.md
+
+
+if ! git config  user.name > /dev/null 2>&1; then
+    echo "git user.name is not set. Setting git config user.name and user.email"
+    git config user.name 'GitHub Action'
+    git config user.email 'action@github.com'
+fi
+
 
 git add CHANGELOG.md
 git commit -m "update changelog with new version"
