@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
-# TODO DOC
+########################################################################################################################
+# This script create or update the PR with the next release notes.
+# It will generate the next release-notes thanks to script hack/generate_release_notes.sh and update the CHANGELOG.md.
+# Then open or update PR. The branch used for the PR is "update-release-notes".
+#
+# This script is intended to be run in github action but can run in local.
+# The following requirements must be satisfied:
+#  * same requirement as hack/generate_release_notes.sh
+#  * the github cli: hub must be installed (https://hub.github.com/)
+########################################################################################################################
 
 set -o errexit
 set -o nounset
@@ -37,12 +46,13 @@ echo  "release notes successfully generated"
 echo  "merging next release notes with changelog"
 echo "=================================================================================================================="
 
-echo -e "\n" >> next-release-notes.md
-cat next-release-notes.md CHANGELOG.md > tmp_changelog.md
+echo -e "\n" >> "${NEXT_RELEASE_NOTES_FILE}"
+cat "${NEXT_RELEASE_NOTES_FILE}" CHANGELOG.md > tmp_changelog.md
 mv tmp_changelog.md CHANGELOG.md
 
 
 if ! git config  user.name > /dev/null 2>&1; then
+    # this mean script is run by github action
     echo "git user.name is not set. Setting git config user.name and user.email"
     git config user.name 'GitHub Action'
     git config user.email 'action@github.com'

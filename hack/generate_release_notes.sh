@@ -1,7 +1,47 @@
 #!/usr/bin/env bash
 
-# TODO DOC
-# GITHUB_REPOSITORY	The owner and repository name. For example, octocat/Hello-World
+########################################################################################################################
+# This script generate the release-notes for next version in ${NEXT_RELEASE_NOTES_FILE} ie
+# repository_root/next-release-notes.md". It collect release notes from PR description merged into 'master' between the
+# last github release and HEAD.
+# For more information about the collection please read the documentation: docs/release-notes-generation.md
+#
+# This script is intended to be run in github action but can run in local.
+#
+# The following tools must be installed and be in the PATH
+#  * hub: the github cli (https://hub.github.com/)
+#  * release-notes: the k8s release-notes-generator tools (https://github.com/kubernetes/release#release-notes)
+#                   can be install thanks to go get command:
+#                   GO111MODULE=on go get k8s.io/release/cmd/release-notes@<version>
+#
+# The following environment variables must be set (there are provided by github action context):
+#   * GITHUB_REPOSITORY: The owner and repository name. For example, octocat/Hello-World
+#   * GITHUB_TOKEN: github personal token with read right on the repository
+#
+# Example:
+# $ export GITHUB_REPOSITORY='vgramer/release-note-test'
+# $ export GITHUB_TOKEN='the-personnal-token'
+# $ hack/generate_release_notes.sh
+#
+# org=vgramer repo=release-note-test
+# last release found. it's tag 'v3.0.0'
+# tag 'v3.0.0' point on commit '88ab66225555776afdbad09cd8424991852f82ae'
+# INFO Using output format: markdown
+# INFO Gathering release notes
+# INFO Starting to process commit 1 of 4 (25.00%): 7b0505715801ef0c90c0729be1a35fe46482141e
+# INFO Starting to process commit 2 of 4 (50.00%): d9489b298d66b6dbf2a97661e1cc847c53216822
+# INFO Starting to process commit 3 of 4 (75.00%): d05bed5ba580ba7e0a7d5fd8f995f4a5c52a0a42
+# INFO Starting to process commit 4 of 4 (100.00%): 88ab66225555776afdbad09cd8424991852f82ae
+# INFO No PR found for commit d9489b298d66b6dbf2a97661e1cc847c53216822: no PR IDs found in the commit message
+# INFO No PR found for commit 7b0505715801ef0c90c0729be1a35fe46482141e: no PR IDs found in the commit message
+# INFO No matches found when parsing PR from commit SHA 7b0505715801ef0c90c0729be1a35fe46482141e
+# INFO No matches found when parsing PR from commit SHA d9489b298d66b6dbf2a97661e1cc847c53216822
+# INFO Got PR #8 for commit: 88ab66225555776afdbad09cd8424991852f82ae
+# INFO Got PR #10 for commit: d05bed5ba580ba7e0a7d5fd8f995f4a5c52a0a42
+# INFO PR #10 seems to contain a release note
+# INFO Got 1 release notes, performing rendering
+# INFO Release notes written to file: /Users/vince/workspace/perso/final/release-note-test/next-release-notes.md
+########################################################################################################################
 
 set -o errexit
 set -o nounset
@@ -12,7 +52,7 @@ source "${ROOT}/hack/util.sh"
 
 function check_environment() {
   util::require-hub
-  util::command_exists "release-notes" || util::fatal 'release-notes not found in path. Please install it before running script. `go get `'
+  util::command_exists "release-notes" || util::fatal 'release-notes not found in path. Please install it before running script. "GO111MODULE=on go get k8s.io/release/cmd/release-notes@<version>"'
 
   set +o nounset
   if [[ -z "${GITHUB_TOKEN}" ]]; then
@@ -58,5 +98,5 @@ release-notes --start-sha "${start_sha}" \
   --org "${org}" \
   --repo "${repo}" \
   --go-template=go-template:"${ROOT}/.github/release-notes.tmpl" \
-  --output "${ROOT}/next-release-notes.md" \
+  --output "${NEXT_RELEASE_NOTES_FILE}" \
   --dependencies=false
