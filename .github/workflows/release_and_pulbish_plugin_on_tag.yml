@@ -13,6 +13,7 @@ jobs:
           # Required for the `hub` CLI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo -e "${GITHUB_REF}\n" > gh_release_description.md
+          VERSION="${GITHUB_REF/refs\/tags\//}"
+          echo -e "${VERSION}\n" > gh_release_description.md
           sed -e '0,/Release notes for v/d' -e '/Release notes for v/,$d' CHANGELOG.md >> gh_release_description.md
-          hub release create -F gh_release_description.md "${GITHUB_REF}"
+          hub release create -F gh_release_description.md "${VERSION}"
