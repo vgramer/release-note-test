@@ -1,3 +1,11 @@
+# Release notes for v3.0.1
+
+## Changes by Kind
+
+### Feature
+
+- Script: variabilize base branch ([#10](https://github.com/vgramer/release-note-test/pull/10), [@vgramer](https://github.com/vgramer))
+
 # Release notes for v3.0.0
 
 ## Changes by Kind
