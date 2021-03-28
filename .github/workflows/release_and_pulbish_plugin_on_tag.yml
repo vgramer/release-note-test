@@ -1,0 +1,18 @@
+name: publish plugin on JB and create release on GH
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+jobs:
+  create_github_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: create or update release note PR
+        env:
+          # Required for the `hub` CLI
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo -e "${GITHUB_REF}\n" > gh_release_description.md
+          sed -e '0,/Release notes for v/d' -e '/Release notes for v/,$d' CHANGELOG.md >> gh_release_description.md
+          hub release create -F gh_release_description.md "${GITHUB_REF}"
