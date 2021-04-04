@@ -1,0 +1,49 @@
+name: publish plugin on JB and create release on GH
+
+on:
+  push:
+    branches: [ "master" ]
+jobs:
+  publish_plugin:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform-version: [ 201, 202 ]
+    env:
+      ORG_GRADLE_PROJECT_platformVersion: ${{ matrix.platform-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: create file
+        run: echo "${ORG_GRADLE_PROJECT_platformVersion}" > "file_${ORG_GRADLE_PROJECT_platformVersion}"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2.2.2
+        with:
+          name: plugin-artifact
+          path: ./file_*
+          retention-days: 1
+          if-no-files-found: error
+
+  create_github_release:
+    runs-on: ubuntu-latest
+    needs : [ publish_plugin ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        id: download
+        with:
+          name: plugin-artifact
+          path: ./artifacts/
+      - name: create or update release note PR
+        env:
+          # Required for the `hub` CLI
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="test"
+          echo -e "${VERSION}\n" > gh_release_description.md
+          ls -alF ${{steps.download.outputs.download-path}}
+          assets=''
+          for file in $(ls ./artifacts/); do assets="${assets} -a ./artifacts/${file}"; done
+          echo "assets=${assets}"
+          sed -e '0,/Release notes for v/d' -e '/Release notes for v/,$d' CHANGELOG.md >> gh_release_description.md
+          hub release create -d -F gh_release_description.md ${assets} "${VERSION}"
